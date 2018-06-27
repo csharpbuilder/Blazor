@@ -24,7 +24,11 @@ namespace HostedInAspNet.Server
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseBlazorOnTheServer<Client.Program>();
+            app.UseBlazorOnTheServer(renderer =>
+            {
+                renderer.AddComponent<Client.Home>("app");
+            });
+
             app.UseBlazor<Client.Program>();
         }
     }

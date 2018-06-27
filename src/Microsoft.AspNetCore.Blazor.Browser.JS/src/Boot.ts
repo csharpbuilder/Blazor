@@ -45,7 +45,7 @@ function getRequiredBootScriptAttribute(elem: HTMLScriptElement, attributeName: 
   return result;
 }
 
-boot();
+//boot();
 
 const connection = new signalR.HubConnectionBuilder()
   .withUrl('/_blazor')
@@ -58,4 +58,3 @@ connection.on('MyMethod', (message: string) => {
 });
 
 connection.start().catch(err => console.error(err.toString()));
-

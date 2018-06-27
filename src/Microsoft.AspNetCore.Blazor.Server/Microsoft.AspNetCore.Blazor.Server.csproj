@@ -11,4 +11,9 @@
     <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="2.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Blazor.Browser\Microsoft.AspNetCore.Blazor.Browser.csproj" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Blazor\Microsoft.AspNetCore.Blazor.csproj" />
+  </ItemGroup>
+
 </Project>

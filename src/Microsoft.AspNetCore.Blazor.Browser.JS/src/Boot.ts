@@ -2,6 +2,7 @@ import '../../Microsoft.JSInterop/JavaScriptRuntime/src/Microsoft.JSInterop';
 import { platform } from './Environment';
 import { getAssemblyNameFromUrl } from './Platform/DotNet';
 import './GlobalExports';
+import * as signalR from '@aspnet/signalr';
 
 async function boot() {
   // Read startup config from the <script> element that's importing this file
@@ -45,3 +46,16 @@ function getRequiredBootScriptAttribute(elem: HTMLScriptElement, attributeName: 
 }
 
 boot();
+
+const connection = new signalR.HubConnectionBuilder()
+  .withUrl('/_blazor')
+  .configureLogging(signalR.LogLevel.Information)
+  .build();
+
+connection.on('MyMethod', (message: string) => {
+  alert(message);
+  connection.send('SomethingFromClient', message.toUpperCase());
+});
+
+connection.start().catch(err => console.error(err.toString()));
+

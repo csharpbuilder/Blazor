@@ -3,20 +3,34 @@
 
 using Microsoft.AspNetCore.Blazor.Browser.Rendering;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.JSInterop;
 using System;
 
 namespace Microsoft.AspNetCore.Blazor.Server.Bots
 {
     internal class Circuit : IDisposable
     {
-        private readonly IClientProxy _clientProxy;
         private readonly BrowserRenderer _renderer;
+        private readonly IJSRuntime _jsRuntime;
 
         public Circuit(IServiceProvider serviceProvider, IClientProxy clientProxy, Action<BrowserRenderer> startupAction)
         {
-            _clientProxy = clientProxy ?? throw new ArgumentNullException(nameof(clientProxy));
+            if (clientProxy == null)
+            {
+                throw new ArgumentNullException(nameof(clientProxy));
+            }
+
+            _jsRuntime = new RemoteJSRuntime(clientProxy);
+            JSRuntime.SetCurrentJSRuntime(_jsRuntime);
+
             _renderer = new BrowserRenderer(serviceProvider);
             startupAction(_renderer);
+        }
+
+        public void BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, string argsJson)
+        {
+            JSRuntime.SetCurrentJSRuntime(_jsRuntime);
+            DotNetDispatcher.BeginInvoke(callId, assemblyName, methodIdentifier, argsJson);
         }
 
         public void Dispose()

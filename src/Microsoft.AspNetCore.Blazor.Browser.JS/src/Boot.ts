@@ -52,9 +52,14 @@ const connection = new signalR.HubConnectionBuilder()
   .configureLogging(signalR.LogLevel.Information)
   .build();
 
-connection.on('MyMethod', (message: string) => {
-  alert(message);
-  connection.send('SomethingFromClient', message.toUpperCase());
-});
+connection.on('JS.BeginInvokeJS', DotNet.jsCallDispatcher.beginInvokeJSFromDotNet);
 
-connection.start().catch(err => console.error(err.toString()));
+connection.start()
+  .then(() => {
+    DotNet.attachDispatcher({
+      beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, argsJson) => {
+        connection.send('BeginInvokeDotNetFromJS', callId || null, assemblyName, methodIdentifier, argsJson);
+      }
+    });
+  })
+  .catch(err => console.error(err.toString()));

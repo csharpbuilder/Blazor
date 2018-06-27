@@ -40,5 +40,8 @@ namespace Microsoft.AspNetCore.Blazor.Server.Bots
             CallerCircuit.Dispose();
             return base.OnDisconnectedAsync(exception);
         }
+
+        public void BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, string argsJson)
+            => CallerCircuit.BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, argsJson);
     }
 }

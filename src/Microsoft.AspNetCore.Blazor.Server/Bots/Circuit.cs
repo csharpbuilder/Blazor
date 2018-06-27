@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Blazor.Browser.Rendering;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.JSInterop;
 using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Blazor.Server.Bots
 {
@@ -24,6 +25,13 @@ namespace Microsoft.AspNetCore.Blazor.Server.Bots
             JSRuntime.SetCurrentJSRuntime(_jsRuntime);
 
             _renderer = new BrowserRenderer(serviceProvider);
+            _renderer.OnException += (sender, exception) =>
+            {
+                // TODO: Somehow dispatch this back to the SignalR hub to make the client's
+                // connection abort and log the exception
+                Console.Error.WriteLine(exception.ToString());
+            };
+
             startupAction(_renderer);
         }
 

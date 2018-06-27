@@ -30,9 +30,10 @@ namespace Microsoft.AspNetCore.Blazor.Server.Bots
 
         public override async Task OnConnectedAsync()
         {
+            await base.OnConnectedAsync();
+
             var startupAction = (Action<BrowserRenderer>)Context.GetHttpContext().Items["blazorstartup"];
             CallerCircuit = new Circuit(_serviceProvider, Clients.Caller, startupAction);
-            await base.OnConnectedAsync();
         }
 
         public override Task OnDisconnectedAsync(Exception exception)
@@ -42,6 +43,8 @@ namespace Microsoft.AspNetCore.Blazor.Server.Bots
         }
 
         public void BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, string argsJson)
-            => CallerCircuit.BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, argsJson);
+        {
+            CallerCircuit.BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, argsJson);
+        }
     }
 }

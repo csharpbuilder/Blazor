@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Blazor.Rendering;
 using Microsoft.JSInterop;
 using Mono.WebAssembly.Interop;
 using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
 {
@@ -17,6 +18,11 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
     public class BrowserRenderer : Renderer, IDisposable
     {
         private readonly int _browserRendererId;
+
+        /// <summary>
+        /// Notifies when a rendering exception occured.
+        /// </summary>
+        public event EventHandler<Exception> OnException;
 
         /// <summary>
         /// Constructs an instance of <see cref="BrowserRenderer"/>.
@@ -60,16 +66,12 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
             var component = InstantiateComponent(componentType);
             var componentId = AssignComponentId(component);
 
-            // The only reason we're calling this synchronously is so that, if it throws,
-            // we get the exception back *before* attempting the first UpdateDisplay
-            // (otherwise the logged exception will come from UpdateDisplay instead of here)
-            // When implementing support for out-of-process runtimes, we'll need to call this
-            // asynchronously and ensure we surface any exceptions correctly.
-            JSRuntime.Current.InvokeAsync<object>(
+            var attachComponentTask = JSRuntime.Current.InvokeAsync<object>(
                 "Blazor._internal.attachRootComponentToElement",
                 _browserRendererId,
                 domElementSelector,
                 componentId);
+            CaptureAsyncExceptions(attachComponentTask);
 
             component.SetParameters(ParameterCollection.Empty);
         }
@@ -94,11 +96,23 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
             }
             else
             {
-                JSRuntime.Current.InvokeAsync<object>(
+                var invokeAsyncTask = JSRuntime.Current.InvokeAsync<object>(
                     "Blazor._internal.renderBatch",
                     _browserRendererId,
                     batch);
+                CaptureAsyncExceptions(invokeAsyncTask);
             }
+        }
+
+        private void CaptureAsyncExceptions(Task task)
+        {
+            task.ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                {
+                    OnException?.Invoke(this, t.Exception);
+                }
+            });
         }
     }
 }

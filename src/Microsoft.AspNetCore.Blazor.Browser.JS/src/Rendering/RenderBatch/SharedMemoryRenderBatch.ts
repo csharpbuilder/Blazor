@@ -13,6 +13,7 @@ export class SharedMemoryRenderBatch implements RenderBatch {
   }
 
   // Keep in sync with memory layout in RenderBatch.cs
+  // TODO: Make these all prototype functions, not instance properties
   updatedComponents = () => platform.readStructField<Pointer>(this.batchAddress, 0) as any as ArrayRange<RenderTreeDiff>;
   referenceFrames = () => platform.readStructField<Pointer>(this.batchAddress, arrayRangeReader.structLength) as any as ArrayRange<RenderTreeDiff>;
   disposedComponentIds = () => platform.readStructField<Pointer>(this.batchAddress, arrayRangeReader.structLength * 2) as any as ArrayRange<number>;

@@ -1,10 +1,18 @@
 import '../../Microsoft.JSInterop/JavaScriptRuntime/src/Microsoft.JSInterop';
-import { platform } from './Environment';
-import { getAssemblyNameFromUrl } from './Platform/DotNet';
 import './GlobalExports';
+import * as Environment from './Environment';
+import { monoPlatform } from './Platform/Mono/MonoPlatform';
+import { getAssemblyNameFromUrl } from './Platform/DotNet';
+import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
 import * as signalR from '@aspnet/signalr';
 
 async function boot() {
+  // Configure environment for execution under Mono WebAssembly
+  Environment.configure(
+    monoPlatform,
+    batchData => new SharedMemoryRenderBatch(batchData));
+  const { platform } = Environment;
+
   // Read startup config from the <script> element that's importing this file
   const allScriptElems = document.getElementsByTagName('script');
   const thisScriptElem = (document.currentScript || allScriptElems[allScriptElems.length - 1]) as HTMLScriptElement;

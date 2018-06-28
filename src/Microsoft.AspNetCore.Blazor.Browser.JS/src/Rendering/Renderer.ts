@@ -1,5 +1,5 @@
 import { System_Object, System_String, System_Array, MethodHandle, Pointer } from '../Platform/Platform';
-import { platform } from '../Environment';
+import { platform, renderBatchFactory } from '../Environment';
 import { RenderBatch } from './RenderBatch/RenderBatch';
 import { BrowserRenderer } from './BrowserRenderer';
 
@@ -20,12 +20,13 @@ export function attachRootComponentToElement(browserRendererId: number, elementS
   browserRenderer.attachRootComponentToElement(componentId, element);
 }
 
-export function renderBatch(browserRendererId: number, batch: RenderBatch) {
+export function renderBatch(browserRendererId: number, batchData: any) {
   const browserRenderer = browserRenderers[browserRendererId];
   if (!browserRenderer) {
     throw new Error(`There is no browser renderer with ID ${browserRendererId}.`);
   }
 
+  const batch = renderBatchFactory(batchData);
   const arrayRangeReader = batch.arrayRangeReader;
   const updatedComponentsRange = batch.updatedComponents();
   const updatedComponentsValues = arrayRangeReader.values(updatedComponentsRange);

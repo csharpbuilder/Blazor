@@ -1,6 +1,12 @@
-﻿// Expose an export called 'platform' of the interface type 'Platform',
-// so that consumers can be agnostic about which implementation they use.
-// Basic alternative to having an actual DI container.
 import { Platform } from './Platform/Platform';
-import { monoPlatform } from './Platform/Mono/MonoPlatform';
-export const platform: Platform = monoPlatform;
+import { RenderBatchFactory } from './Rendering/RenderBatch/RenderBatch';
+
+// These variables are readable anywhere else in the system, acting as a
+// simple servicelocator-style DI mechanism
+export let platform: Platform;
+export let renderBatchFactory: RenderBatchFactory;
+
+export function configure(_platform: Platform, _renderBatchFactory: RenderBatchFactory) {
+  platform = _platform;
+  renderBatchFactory = _renderBatchFactory;
+}

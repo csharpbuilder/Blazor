@@ -3,20 +3,17 @@ import { navigateTo, internalFunctions as uriHelperInternalFunctions } from './S
 import { internalFunctions as httpInternalFunctions } from './Services/Http';
 import { attachRootComponentToElement, renderBatch } from './Rendering/Renderer';
 import { Pointer } from './Platform/Platform';
-import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
+import { RenderBatch } from './Rendering/RenderBatch/RenderBatch';
 
-if (typeof window !== 'undefined') {
-  // When the library is loaded in a browser via a <script> element, make the
-  // following APIs available in global scope for invocation from JS
-  window['Blazor'] = {
-    platform,
-    navigateTo,
+// Make the following APIs available in global scope for invocation from JS
+window['Blazor'] = {
+  platform,
+  navigateTo,
 
-    _internal: {
-      attachRootComponentToElement,
-      renderBatch: (browserRendererId: number, batchAddress: Pointer) => renderBatch(browserRendererId, new SharedMemoryRenderBatch(batchAddress)),
-      http: httpInternalFunctions,
-      uriHelper: uriHelperInternalFunctions
-    }
-  };
-}
+  _internal: {
+    attachRootComponentToElement,
+    renderBatch,
+    http: httpInternalFunctions,
+    uriHelper: uriHelperInternalFunctions
+  }
+};

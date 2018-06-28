@@ -1,3 +1,7 @@
+export interface RenderBatchFactory {
+  (batchData: any): RenderBatch;
+}
+
 export interface RenderBatch {
   updatedComponents(): ArrayRange<RenderTreeDiff>;
   referenceFrames(): ArrayRange<RenderTreeFrame>;

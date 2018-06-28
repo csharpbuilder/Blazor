@@ -94,13 +94,14 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
                     _browserRendererId,
                     batch);
             }
+            else if (JSRuntime.Current is IRenderBatchDispatcher renderBatchDispatcher)
+            {
+                var task = renderBatchDispatcher.RenderBatchAsync(_browserRendererId, batch);
+                CaptureAsyncExceptions(task);
+            }
             else
             {
-                var invokeAsyncTask = JSRuntime.Current.InvokeAsync<object>(
-                    "Blazor._internal.renderBatch",
-                    _browserRendererId,
-                    batch);
-                CaptureAsyncExceptions(invokeAsyncTask);
+                throw new InvalidOperationException($"The current {nameof(IJSRuntime)} does not provide an implementation of {nameof(IRenderBatchDispatcher)}.");
             }
         }
 

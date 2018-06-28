@@ -3,6 +3,8 @@ import './GlobalExports';
 import * as Environment from './Environment';
 import * as signalR from '@aspnet/signalr';
 import { OutOfProcessRenderBatch } from './Rendering/RenderBatch/OutOfProcessRenderBatch';
+import { internalFunctions as uriHelperFunctions } from './Services/UriHelper';
+import { renderBatch } from './Rendering/Renderer';
 
 function boot() {
   Environment.configure(
@@ -17,6 +19,12 @@ function boot() {
 
   connection.on('JS.BeginInvokeJS', DotNet.jsCallDispatcher.beginInvokeJSFromDotNet);
 
+  // TODO: Since we could convert the batchData to an OutOfProcessRenderBatch here,
+  // remove renderBatchFactory from the Environment module.
+  connection.on('JS.RenderBatch', (browserRendererId, batchData) => {
+    renderBatch(browserRendererId, batchData);
+  });
+
   connection.start()
     .then(() => {
       DotNet.attachDispatcher({
@@ -24,6 +32,12 @@ function boot() {
           connection.send('BeginInvokeDotNetFromJS', callId || null, assemblyName, methodIdentifier, argsJson);
         }
       });
+
+      connection.send(
+        'StartCircuit',
+        uriHelperFunctions.getLocationHref(),
+        uriHelperFunctions.getBaseURI()
+      );
     })
     .catch(err => console.error(err.toString()));
 }

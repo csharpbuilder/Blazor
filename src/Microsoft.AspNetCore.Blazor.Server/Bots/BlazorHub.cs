@@ -12,13 +12,6 @@ namespace Microsoft.AspNetCore.Blazor.Server.Bots
     {
         private static object _callerCircuitKey = new object();
 
-        private readonly IServiceProvider _serviceProvider;
-
-        public BlazorHub(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-        }
-
         public Circuit CallerCircuit
         {
             get => (Circuit)Context.Items[_callerCircuitKey];
@@ -28,18 +21,17 @@ namespace Microsoft.AspNetCore.Blazor.Server.Bots
             }
         }
 
-        public override async Task OnConnectedAsync()
-        {
-            await base.OnConnectedAsync();
-
-            var startupAction = (Action<BrowserRenderer>)Context.GetHttpContext().Items["blazorstartup"];
-            CallerCircuit = new Circuit(_serviceProvider, Clients.Caller, startupAction);
-        }
-
         public override Task OnDisconnectedAsync(Exception exception)
         {
             CallerCircuit.Dispose();
             return base.OnDisconnectedAsync(exception);
+        }
+
+        public void StartCircuit(string uriAbsolute, string baseUriAbsolute)
+        {
+            var httpContext = Context.GetHttpContext();
+            var startupAction = (Action<BrowserRenderer>)httpContext.Items["blazorstartup"];
+            CallerCircuit = new Circuit(Clients.Caller, startupAction, uriAbsolute, baseUriAbsolute);
         }
 
         public void BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, string argsJson)

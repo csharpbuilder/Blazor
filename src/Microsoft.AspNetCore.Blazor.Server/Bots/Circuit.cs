@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Blazor.Browser.Rendering;
+using Microsoft.AspNetCore.Blazor.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using System;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Blazor.Server.Bots
 {
@@ -14,7 +16,7 @@ namespace Microsoft.AspNetCore.Blazor.Server.Bots
         private readonly BrowserRenderer _renderer;
         private readonly IJSRuntime _jsRuntime;
 
-        public Circuit(IServiceProvider serviceProvider, IClientProxy clientProxy, Action<BrowserRenderer> startupAction)
+        public Circuit(IClientProxy clientProxy, Action<BrowserRenderer> startupAction, string uriAbsolute, string baseUriAbsolute)
         {
             if (clientProxy == null)
             {
@@ -24,7 +26,12 @@ namespace Microsoft.AspNetCore.Blazor.Server.Bots
             _jsRuntime = new RemoteJSRuntime(clientProxy);
             JSRuntime.SetCurrentJSRuntime(_jsRuntime);
 
-            _renderer = new BrowserRenderer(serviceProvider);
+            // TODO: Consolidate the service providers
+            var perCircuitServiceCollection = new ServiceCollection();
+            var uriHelper = new RemoteUriHelper(_jsRuntime, uriAbsolute, baseUriAbsolute);
+            perCircuitServiceCollection.AddSingleton<IUriHelper>(uriHelper);
+
+            _renderer = new BrowserRenderer(perCircuitServiceCollection.BuildServiceProvider());
             _renderer.OnException += (sender, exception) =>
             {
                 // TODO: Somehow dispatch this back to the SignalR hub to make the client's

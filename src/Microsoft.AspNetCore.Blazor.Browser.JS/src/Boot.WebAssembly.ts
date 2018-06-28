@@ -4,7 +4,6 @@ import * as Environment from './Environment';
 import { monoPlatform } from './Platform/Mono/MonoPlatform';
 import { getAssemblyNameFromUrl } from './Platform/DotNet';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
-import * as signalR from '@aspnet/signalr';
 
 async function boot() {
   // Configure environment for execution under Mono WebAssembly

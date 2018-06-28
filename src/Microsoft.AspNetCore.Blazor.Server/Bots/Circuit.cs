@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Blazor.Server.Bots
     internal class Circuit : IDisposable
     {
         private readonly BrowserRenderer _renderer;
+        private readonly RemoteUriHelper _uriHelper;
         private readonly IJSRuntime _jsRuntime;
 
         public Circuit(IClientProxy clientProxy, Action<BrowserRenderer> startupAction, string uriAbsolute, string baseUriAbsolute)
@@ -28,8 +29,8 @@ namespace Microsoft.AspNetCore.Blazor.Server.Bots
 
             // TODO: Consolidate the service providers
             var perCircuitServiceCollection = new ServiceCollection();
-            var uriHelper = new RemoteUriHelper(_jsRuntime, uriAbsolute, baseUriAbsolute);
-            perCircuitServiceCollection.AddSingleton<IUriHelper>(uriHelper);
+            _uriHelper = new RemoteUriHelper(_jsRuntime, uriAbsolute, baseUriAbsolute);
+            perCircuitServiceCollection.AddSingleton<IUriHelper>(_uriHelper);
 
             _renderer = new BrowserRenderer(perCircuitServiceCollection.BuildServiceProvider());
             _renderer.OnException += (sender, exception) =>
@@ -45,7 +46,21 @@ namespace Microsoft.AspNetCore.Blazor.Server.Bots
         public void BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, string argsJson)
         {
             JSRuntime.SetCurrentJSRuntime(_jsRuntime);
-            DotNetDispatcher.BeginInvoke(callId, assemblyName, methodIdentifier, argsJson);
+
+            switch (methodIdentifier)
+            {
+                // Massive hack. Need a common system for dispatching calls within the context of
+                // a specific circuit / service provider / etc. Maybe we just need to have an
+                // asynclocal Circuit.Current, just like JSRuntime.Current, then if the call target
+                // is a static it can obtain the services it needs to invoke instance methods on.
+                case "NotifyLocationChanged":
+                    var args = Json.Deserialize<string[]>(argsJson);
+                    _uriHelper.NotifyLocationChanged(args[0]);
+                    break;
+                default:
+                    DotNetDispatcher.BeginInvoke(callId, assemblyName, methodIdentifier, argsJson);
+                    break;
+            }
         }
 
         public void Dispose()

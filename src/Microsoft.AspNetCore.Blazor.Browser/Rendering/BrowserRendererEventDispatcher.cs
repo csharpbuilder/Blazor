@@ -12,6 +12,17 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
     /// </summary>
     public static class BrowserRendererEventDispatcher
     {
+        // TODO: Fix this for multi-user scenarios. Currently it doesn't stop people from
+        // triggering events for other people by passing an arbitrary browserRendererId.
+        //
+        // Preferred fix: Instead of storing the Renderer instances in a static dictionary
+        // store them within the context of a Circuit. Then we'll only look up the ones
+        // associated with the caller's circuit. This takes care of ensuring they are
+        // released when the circuit is closed too.
+        //
+        // More generally, we must move away from using statics for any per-user state
+        // now that we have multi-user scenarios.
+
         /// <summary>
         /// For framework use only.
         /// </summary>

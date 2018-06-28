@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Blazor.Server.Bots
     {
         const string _functionPrefix = "Blazor._internal.uriHelper.";
         private readonly IJSRuntime _jsRuntime;
-        private readonly string _uriAbsolute;
+        private string _uriAbsolute;
 
         // These two are always kept in sync. We store both representations to
         // avoid having to convert between them on demand.
@@ -29,6 +29,8 @@ namespace Microsoft.AspNetCore.Blazor.Server.Bots
             _baseUriWithTrailingSlash = new Uri(_baseUriStringWithTrailingSlash);
 
             _uriAbsolute = initialUriAbsolute;
+
+            JSRuntime.Current.InvokeAsync<object>(_functionPrefix + "enableNavigationInterception");
         }
 
 #pragma warning disable CS0067
@@ -67,6 +69,12 @@ namespace Microsoft.AspNetCore.Blazor.Server.Bots
             }
 
             throw new ArgumentException($"The URI '{absoluteUri}' is not contained by the base URI '{baseUri}'.");
+        }
+
+        internal void NotifyLocationChanged(string newAbsoluteUri)
+        {
+            _uriAbsolute = newAbsoluteUri;
+            OnLocationChanged?.Invoke(null, newAbsoluteUri);
         }
 
         static string ToBaseUri(string absoluteBaseUri)

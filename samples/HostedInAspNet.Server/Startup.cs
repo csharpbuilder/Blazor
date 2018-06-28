@@ -26,10 +26,10 @@ namespace HostedInAspNet.Server
 
             app.UseBlazorOnTheServer(renderer =>
             {
-                renderer.AddComponent<Client.Home>("app");
+                renderer.AddComponent<StandaloneApp.App>("app");
             });
 
-            app.UseBlazor<Client.Program>();
+            app.UseBlazor<StandaloneApp.App>();
         }
     }
 }
